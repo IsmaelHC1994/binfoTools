@@ -1,0 +1,4 @@
+chr	pos	ref	alt	consequence	gene	cadd	revel	maf_gnomad	maf_1000g
+4	154631634	G	A	missense_variant	gene1	25.39999962	0.817	0.000392958	0.11415929
+11	102661243	T	C	missense_variant	gene2	30	0.924	0.000360802	0.0017699115
+16	72094032	C	G	splice_acceptor_variant	gene3	34	--	--	--

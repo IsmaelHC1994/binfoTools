@@ -1,0 +1,103 @@
+"""
+Author: ihc
+Aim: Workflow to generate a dendrogram and a barplot from clustering samples according to variant genotype.
+Date: jan 20 2023
+Run: 
+	mamba activate snakemake
+	snakemake -c1 -s src/snakemake/Snakefile_ all --config MAIN_NAME=foo_fop 
+Latest modification: jan 24 2023
+"""
+
+
+#
+# Workflow to generate a dendrogram and a barplot from clustering samples according to variant genotype.
+# 
+
+############## file TARGETS #################################
+
+# filename that will be used during the workflow
+MAIN_NAME = config.get("MAIN_NAME") or "example"
+
+# wide table with variant data
+WIDE_TABLE = "data/wide_tables/{MAIN_NAME}.tsv"
+
+# VCF file
+VCF = "data/vcf/{MAIN_NAME}.vcf"
+
+# Variant id list file
+ID = "data/variants_id/{MAIN_NAME}.txt"
+
+# Haplotype extraction file
+GENOTYPES =  "results/genotypes/{MAIN_NAME}.tsv"
+
+# number of clusters 
+N_CLUSTERS = "3"
+
+# dendogram plot output
+PLOT_DIR = "results/genotype_plots/{MAIN_NAME}/"
+
+
+# Print usage
+rule usage:
+	shell:
+		"echo 'Usage: snakemake -c1 -s snakefile \n' "
+		"echo 'use -np print-only jobs description \n' "
+		"echo 'snakemake -c1 -s src/snakemake/Snakefile all --config MAIN_NAME=foo_fop -np'"
+
+
+############## rules  ##############################################
+
+rule all:
+    input:
+        expand('data/wide_tables/{MAIN_NAME}.tsv', MAIN_NAME=MAIN_NAME),
+        expand('data/vcf/{MAIN_NAME}.vcf', 
+MAIN_NAME=MAIN_NAME),
+        expand("data/variants_id/{MAIN_NAME}.txt", MAIN_NAME=MAIN_NAME),
+        expand("results/genotypes/{MAIN_NAME}.tsv", MAIN_NAME=MAIN_NAME),
+        expand("results/genotype_plots/{MAIN_NAME}/", MAIN_NAME=MAIN_NAME),
+
+#  generate variant ids from wide table rule.
+rule variants_id:
+    input:
+        WIDE_TABLE,
+    output:
+        ID,
+    shell:
+        "mkdir -p data/variants_id && "
+        "python3 src/python/variant_ids_from_wide_format.py -f {input} -o {output} --chrFormat "
+        
+
+# extract genotypes from variants rule.
+rule genotypes:
+	input:
+		VCF, ID,
+	output:
+		GENOTYPES,
+	shell:
+		"mkdir -p results/genotypes && "
+		"python3 src/python/get_genotypes_samples.py -f {input[0]} -id {input[1]} -o {output}"
+		
+# cluster samples and generate plots.
+rule plots:
+	input:
+		GENOTYPES,
+	output:
+		directory(PLOT_DIR),
+	shell:
+		"mkdir -p {output} && "
+		"Rscript src/R/dendrogram_from_genotypes.R -f {input} -n {N_CLUSTERS} -od {output}/"
+
+# Open plots.
+rule open_plots:
+    input:
+        dir_=expand('results/genotype_plots/{MAIN_NAME}/', MAIN_NAME=MAIN_NAME),
+    shell:
+        "ls {input.dir_}/*.tiff | xargs -n 1 xdg-open "
+
+# remove created files. TODO
+#rule clean:
+#    input:
+#        ID, GENOTYPES,
+#    shell:
+#        "rm -rf {input[0]} {input[1]}"
+		

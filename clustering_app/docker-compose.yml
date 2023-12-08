@@ -1,0 +1,16 @@
+version: "0.8"
+
+services:
+  rstudio:
+    image: ihenarejos/clustering-from-genotypes:0.8
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dendrograms
+#   env_file:
+#      - .env
+    volumes:
+      - .clustering_from_genotypes/src:/code
+    ports:
+      - "8787:8787"
+    command: /bin/bash
