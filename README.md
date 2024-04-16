@@ -5,52 +5,30 @@ In process of updating.
 
 Generates a dendrogram and a barplot for sample clustering according to sample genotypes.
 
-<!-- | Projects |
-| ---------------------- | -->
-
-<!-- ## [**Whole exome sequencing**]
-- To include:
-    - **Variant call format parsing, formatting and processing**
-    - **Variant class to individually parse and process genomic variants**
-    - **Burden test pipeline**
-    - **Variant prioritization pipeline**
-    
-## [**COVID-19 transcriptomics**]
-- To include:
-  - **RNA preprocessing**
-  - **Transcriptomic differential expression analysis**
-  - **Functional enrichment analysis**
-  - **Coexpression gene network analysis**
-  
-## [**Drug-drug interactions prediction**]
-- To include:
-  - **Matrix generation, product pipeline**
-  - **DrugBank, SIDER parsing**
-  - **Prediction analysis** -->
-
-
 ### Usage
+0. Clone/Download repository
+1. Build and run docker image from repository root:
 
-1. Build and run docker image:
+       sudo docker build -t <user>/clustering-from-genotypes clustering_app/.
+   
+       sudo docker run -it -d --name dendrograms <user>/clustering-from-genotypes
 
-       docker build -t [user]/clustering-from-genotypes clustering_from_genotypes/.
+       sudo docker exec -it dendrograms /bin/bash
 
-       docker run -it -d --name dendrograms
+2. In docker terminal, launch workflow either using MAKE or Snakemake (docker is configured to start in the root of the app):
 
-       docker exec -it dendrograms /bin/bash
-
-2. Launch workflow either using MAKE or Snakemake (docker is configured to start in the root of the app):
-
-       make -f src/make/workflow_dendrogram_genotypes.mk all
+       cd clustering_from_genotypes
+       make -f src/make/workflow_dendrogram_genotypes.mk all  MAIN_NAME=foo_fop
+       # When finished, you can run bash docker_stop.sh to stop and remove docker image.
 
 * Alternatively, launch either MAKE or Snakemake from the app root (GNU Make > 4.0, python > 3.8, snakemake, R > 4.0 with provided packages in src/R/install_packages.R are required):
 
-       make -f [path_to_app]/src/make/workflow_dendrogram_genotypes.mk all
+       make -f [path_to_app]/src/make/workflow_dendrogram_genotypes.mk all MAIN_NAME=foo_fop
 
        snakemake -c1 -s [path_to_app] src/snakemake/Snakefile all --config MAIN_NAME=foo_fop
 
 ## VCF-GTF annotation
-Annotates VCF files (files containing mutations found in the genomic data of a specific organism) to include the genes affected by these mutations. Uses parallelization to perform analysis on several VCF files at the same time.
+Annotates VCF files (files containing mutations found in the genomic data of a specific organism) to include the genes affected by these mutations. Uses parallelization to perform analysis on several VCF files at the same time (with make -f NUM_PROCESS=<>).
 
 1. Launching workflow:
 
@@ -58,7 +36,7 @@ Annotates VCF files (files containing mutations found in the genomic data of a s
 
 ## Make help
 
-For any mke file in this repository, typing  `make -f src/make/workflow_dendrogram_genotypes.mk` in the terminal will print the usage help in the terminal. All rules of the workflow will be described with examples. Alternatively, the usage rule can be used to display the help:  `make -f src/make/workflow_dendrogram_genotypes.mk usage`
+For any make file in this repository, typing  `make -f src/make/<makefile>.mk` in the terminal will print the usage help in the terminal. All rules of the workflow will be described with examples. Alternatively, the usage rule can be used to display the help:  `make -f src/make/workflow_dendrogram_genotypes.mk usage`
 
 - To display what commands make is going to run, the variable -n should be used. For example, for the rule `genotypes`, typing `make -f src/make/workflow_dendrogram_genotypes.mk genotypes -n` will display the following:
   
